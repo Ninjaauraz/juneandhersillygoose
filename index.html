@@ -88,6 +88,42 @@
     transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.35s ease, background 1.2s ease, border-color 1.2s ease; }
   .card:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-hover); }
   .big-num { font-family: var(--serif); font-size: 52px; font-weight: 400; color: var(--accent-color); line-height: 1; margin: 12px 0; letter-spacing: -1px; }
+
+  .love-ticker {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    letter-spacing: 0.3px;
+  }
+
+  .milestone-progress-track {
+    height: 6px;
+    background: rgba(122, 70, 89, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+  .milestone-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-color), #e8967e);
+    border-radius: 10px;
+    transition: width 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .milestone-progress-fill.almost {
+    background: linear-gradient(90deg, #f0825f, #ef5c7e);
+    animation: milestonePulse 1.4s ease-in-out infinite;
+  }
+  @keyframes milestonePulse {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.25); }
+  }
+  #nextAnniversaryLabel.countdown-live #nextAnniversary {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--accent-color) !important;
+    font-weight: 700;
+  }
   .label-small { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); }
   .btn { padding: 12px 22px; border-radius: 12px; border: 0; background: var(--accent-color); color: white; cursor: pointer; font-weight: 600;
     font-size: 14px; transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1), background 0.2s ease, box-shadow 0.25s ease;
@@ -619,11 +655,177 @@
     0%,100% { transform: scale(1); opacity: 1; }
     50%      { transform: scale(1.4); opacity: 0.7; }
   }
+
+  /* =====================================================
+     ANNIVERSARY OPENING — FLOWER BLOOM
+     ===================================================== */
+  #bloomOverlay {
+    position: fixed; inset: 0; z-index: 99998; overflow: hidden;
+    background: radial-gradient(circle at 50% 45%, #f4b3c4 0%, #ea96ad 55%, #de7f9b 100%);
+    transition: opacity 1.3s ease;
+    display: none;
+  }
+  #bloomOverlay.playing { display: block; }
+  #bloomOverlay.cleared { opacity: 0; pointer-events: none; }
+
+  .a-flower {
+    position: absolute;
+    transform: translate(-50%, -50%) scale(0) rotate(var(--rot, 0deg));
+    transform-origin: center;
+    contain: layout paint style;
+    opacity: 0;
+  }
+  .a-flower.bloom {
+    animation: aBloomIn 0.9s cubic-bezier(0.34, 1.56, 0.46, 1) forwards;
+    animation-delay: var(--delay, 0s);
+  }
+  @keyframes aBloomIn {
+    0%   { transform: translate(-50%, -50%) scale(0) rotate(calc(var(--rot,0deg) - 40deg)); opacity: 0; }
+    60%  { opacity: 1; }
+    80%  { transform: translate(-50%, -50%) scale(1.08) rotate(var(--rot,0deg)); }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(var(--rot,0deg)); opacity: 1; }
+  }
+  .a-flower.vanish {
+    animation: aFallAway 1.5s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+    animation-delay: var(--vdelay, 0s);
+  }
+  @keyframes aFallAway {
+    0%   { transform: translate(-50%, -50%) scale(1) rotate(var(--rot,0deg)); opacity: 1; }
+    100% { transform: translate(-50%, calc(-50% + 115vh)) scale(0.7) rotate(calc(var(--rot,0deg) + var(--spin, 180deg))); opacity: 0; }
+  }
+  .a-petal {
+    position: absolute; top: -40px;
+    will-change: transform, opacity;
+    animation: aPetalFall var(--pdur, 4s) linear forwards;
+    animation-delay: var(--pdelay, 0s);
+    opacity: 0.9;
+  }
+  @keyframes aPetalFall {
+    0%   { transform: translateY(-40px) translateX(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.9; }
+    100% { transform: translateY(110vh) translateX(var(--drift, 40px)) rotate(540deg); opacity: 0; }
+  }
+
+  /* =====================================================
+     ANNIVERSARY LOVE LETTER CARD
+     ===================================================== */
+  #loveLetterOverlay {
+    position: fixed; inset: 0; z-index: 99999; display: none;
+    align-items: center; justify-content: center; padding: 24px;
+    background: rgba(60, 20, 35, 0.35); backdrop-filter: blur(6px);
+    opacity: 0; transition: opacity 0.9s ease;
+  }
+  #loveLetterOverlay.visible { display: flex; opacity: 1; }
+  .love-letter-card {
+    max-width: 560px; width: 100%;
+    max-height: 84vh; overflow-y: auto;
+    background: linear-gradient(160deg, #fffaf6, #fff3f0);
+    border-radius: 26px; padding: 40px 34px;
+    box-shadow: 0 40px 100px rgba(90, 20, 50, 0.35), 0 0 0 1px rgba(255,255,255,0.6);
+    text-align: center;
+    transform: translateY(18px) scale(0.96); opacity: 0;
+    transition: transform 0.8s cubic-bezier(0.23,1,0.32,1), opacity 0.8s ease;
+  }
+  #loveLetterOverlay.visible .love-letter-card { transform: translateY(0) scale(1); opacity: 1; }
+  .love-letter-kicker {
+    font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--accent-color); margin-bottom: 16px;
+  }
+  .love-letter-body {
+    font-family: var(--serif); font-size: clamp(15px, 2.4vw, 18px); line-height: 1.65;
+    color: #5c3344; white-space: pre-line; margin-bottom: 26px; text-align: left;
+  }
+  .love-letter-sign {
+    font-family: 'Indie Flower', cursive; font-size: 24px; color: var(--accent-color); margin-bottom: 26px;
+  }
+
+  /* =====================================================
+     ANNIVERSARY-ACTIVE THEME (persists all day on the 19th)
+     ===================================================== */
+  body.anniversary-active #mainShell {
+    background: linear-gradient(160deg, rgba(255,251,246,0.95), rgba(255,240,235,0.95)) !important;
+    box-shadow: 0 40px 110px rgba(212, 80, 60, 0.28), 0 0 0 1px rgba(255, 210, 170, 0.35) !important;
+  }
+  body.anniversary-active header {
+    background: linear-gradient(90deg, rgba(255,236,225,0.6), rgba(255,225,235,0.6)) !important;
+    border-bottom-color: rgba(212, 114, 92, 0.14) !important;
+  }
+  body.anniversary-active .logo { color: #e0633f !important; }
+  body.anniversary-active .sub-logo { color: #d4725c !important; font-weight: 700 !important; }
+  body.anniversary-active nav button.active {
+    background: linear-gradient(90deg, rgba(255,170,120,0.22), rgba(255,130,160,0.22)) !important;
+    color: #d4475c !important;
+  }
+  body.anniversary-active .card { border-color: rgba(255, 170, 110, 0.18) !important; }
+  body.anniversary-active .btn {
+    background: linear-gradient(90deg, #f0825f, #ef5c7e) !important;
+    box-shadow: 0 4px 16px rgba(240, 92, 110, 0.35) !important;
+  }
+  body.anniversary-active footer { color: #d4725c !important; }
+
+  /* gentle ambient confetti petals, only while anniversary-active */
+  #ambientPetals { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; display: none; }
+  body.anniversary-active #ambientPetals { display: block; }
+  .amb-petal {
+    position: absolute; top: -30px; border-radius: 0 70% 0 70%;
+    animation: ambFall linear infinite;
+    opacity: 0.85;
+  }
+  @keyframes ambFall {
+    0%   { transform: translateY(-30px) translateX(0) rotate(0deg); }
+    100% { transform: translateY(108vh) translateX(var(--adrift, 60px)) rotate(420deg); }
+  }
+
+  /* small flowers that bloom in place across the whole screen, all day */
+  .amb-bloom {
+    position: absolute;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
+    opacity: 0;
+    animation: ambBloomCycle var(--bdur, 6.5s) ease-in-out forwards;
+    filter: drop-shadow(0 2px 6px rgba(180, 80, 90, 0.12));
+  }
+  @keyframes ambBloomCycle {
+    0%   { opacity: 0; transform: scale(0.25) rotate(var(--brot, 0deg)); }
+    20%  { opacity: 0.95; transform: scale(1) rotate(var(--brot, 0deg)); }
+    72%  { opacity: 0.95; transform: scale(1) rotate(var(--brot, 0deg)); }
+    100% { opacity: 0; transform: scale(0.82) rotate(calc(var(--brot, 0deg) + 10deg)); }
+  }
+
+  /* tiny sparkle / heart accents for extra cuteness */
+  .amb-sparkle {
+    position: absolute; line-height: 1; pointer-events: none; user-select: none;
+    font-size: var(--ssize, 16px);
+    opacity: 0;
+    animation: ambSparkleCycle var(--sdur, 3.2s) ease-in-out forwards;
+    filter: drop-shadow(0 1px 3px rgba(180, 80, 90, 0.15));
+  }
+  @keyframes ambSparkleCycle {
+    0%   { opacity: 0; transform: scale(0.4) translateY(6px); }
+    30%  { opacity: 1; transform: scale(1.1) translateY(0); }
+    65%  { opacity: 1; transform: scale(1) translateY(0); }
+    100% { opacity: 0; transform: scale(0.75) translateY(-12px); }
+  }
 </style>
 </head>
 <body>
 
 <canvas id="sceneCanvas"></canvas>
+
+<!-- ANNIVERSARY FLOWER BLOOM (plays once, first open on June 19) -->
+<div id="bloomOverlay"></div>
+
+<!-- ANNIVERSARY LOVE LETTER CARD (shown right after the bloom clears) -->
+<div id="loveLetterOverlay">
+  <div class="love-letter-card">
+    <div class="love-letter-kicker">One Year, My June</div>
+    <div class="love-letter-body" id="loveLetterBody"></div>
+    <div class="love-letter-sign" id="loveLetterSign">Forever your Silly Goose 🪷💕</div>
+    <button class="btn" onclick="closeLoveLetter()">Continue ❤️</button>
+  </div>
+</div>
+
+<!-- gentle ambient petals, visible all day on the 19th -->
+<div id="ambientPetals"></div>
 
 <div class="wrap">
   <div class="shell" id="mainShell">
@@ -663,10 +865,14 @@
             <div class="label-small">Our Love Story</div>
             <div class="big-num" id="daysCounter">—</div>
             <div class="label-small">Days since June 19, 2025</div>
+            <div id="liveSecondsCounter" class="love-ticker">—</div>
           </div>
           <div class="card" style="text-align:center; padding: 30px; background: linear-gradient(135deg, #fff, #fff0f3);">
             <div id="anniversaryHeader" style="font-family:var(--serif); font-size:22px; font-weight:400; color:var(--accent-color);"></div>
-            <div class="label-small" style="margin-top:10px;">Next Monthly Milestone: <span id="nextAnniversary" style="color:var(--text-main)">—</span></div>
+            <div class="label-small" id="nextAnniversaryLabel" style="margin-top:10px;">Next Monthly Milestone: <span id="nextAnniversary" style="color:var(--text-main)">—</span></div>
+            <div class="milestone-progress-track">
+              <div class="milestone-progress-fill" id="milestoneProgressFill"></div>
+            </div>
           </div>
           <div class="card">
             <div style="font-family:var(--serif); font-weight:400; font-size:18px; margin-bottom:12px;">Our Prom Date</div>
@@ -1536,11 +1742,312 @@ var jarReasons=["I feel at home when I am with you!","You have the prettiest smi
 var slotOptions={reel1:["Study 📚","Walk 🌲","Read 📖","Nap 😴","Exercise 🏃\u200d♀️","Clean 🧹","Relax 🛁"],reel2:["Coffee ☕","Tea 🍵","Water 💧","Pizza 🍕","Fruit 🍎","Chocolate 🍫","Sushi 🍣"],reel3:["Lofi Beats","Silence","Outside","Cozy Bed","With Music","Warm Blanket"]};
 async function initWeather(){var info=document.getElementById('weatherInfo');info.innerText="Locating...";if(navigator.geolocation){navigator.geolocation.getCurrentPosition(async function(pos){try{var r=await fetch('https://api.weatherapi.com/v1/current.json?key='+WEATHER_KEY+'&q='+pos.coords.latitude+','+pos.coords.longitude+'&aqi=no');var d=await r.json();applyWeatherTheme(d);}catch(e){info.innerText="Error loading weather.";manualTheme('day');}},function(){info.innerText="Permission Denied";manualTheme('day');});}else{info.innerText="Not supported";manualTheme('day');}}
 
+/* ==========================================================
+   ANNIVERSARY — FLOWER BLOOM + LOVE LETTER + VIBRANT THEME
+   Triggers on the visitor's own local clock, no timezone math.
+   ========================================================== */
+
+/* ---- the actual note text goes here ---- */
+var LOVE_LETTER_TEXT = "My June 🤍\n\nOne whole year.\n\n365 days somehow sound so ordinary until i realize that they have been filled with u. your sleepy voice in the mornings. your little complaints when u are hangry. your random stories. your stubbornness. your smile that somehow reaches me from thousands of kilometers away. and the quiet moments where we do not even need words to know we are there\n\nThis year was not perfect. we argued we misunderstood each other we had days where distance felt unfair and nights where life felt heavier than either of us wanted it to be. u moved to a new country. u cried. i overthought. we both got scared sometimes\n\nBut every single time we found our way back to each other\n\nAnd i think that is my favorite part of us\n\nPeople talk about love like it is only the easy days. i have learned that love is also staying on the phone when one of us is quiet. waking u up because i promised i would. remembering the smallest things about your day. celebrating the tiniest victories. sending flowers just because i wanted your morning to be softer. choosing patience when life is loud\n\nThere is something i want u to know today\n\nThank u for letting me be a part of your world. thank u for trusting me with your happiest moments and your heaviest ones. thank u for letting me love u in my own sometimes awkward sometimes overthinking but always wholehearted way\n\nIf i could wish for one thing it would not be a perfect future. it would simply be more ordinary days with u. more late night calls. more silly arguments that end in laughter. more good morning texts. more moments where i get to remind u how unbelievably beautiful u are. more opportunities to hold your hand whenever life feels a little too much\n\nA year ago i found my June\n\nToday i still look at u with the same wonder and somehow even more love\n\nNo matter where life takes us i hope u never forget this\n\nThere is someone in this world who will always be in your corner. who will always choose kindness with u. who will always believe in u even on the days u cannot believe in yourself\n\ni love u with all my heart and soul and everything that makes Ambuj\n\nHappy one year my June 🤍";
+var LOVE_LETTER_SIGN = "— Ambuj";
+
+function isAnniversaryDate(d) {
+  d = d || new Date();
+  return d.getMonth() === 5 && d.getDate() === 19; // June 19, local browser time
+}
+
+/* ---------- flower factory (real multi-petal flowers, one element each) ---------- */
+var BLOOM_PALETTES = [
+  { petal: '#ffb3c6', edge: '#f78ca6', center: '#ffe08a' },
+  { petal: '#ff8fa3', edge: '#e8607f', center: '#ffd86b' },
+  { petal: '#f6a6c1', edge: '#e07f9e', center: '#fff0a0' },
+  { petal: '#f9c6d7', edge: '#ec9bb6', center: '#f7d36b' },
+  { petal: '#cba6d6', edge: '#b486c4', center: '#f3d36b' },
+  { petal: '#ffd66b', edge: '#f4b73e', center: '#e07b39' },
+  { petal: '#ffb347', edge: '#f08a24', center: '#ffe08a' },
+  { petal: '#b39ddb', edge: '#8e6cc4', center: '#ffe07a' },
+  { petal: '#9fb6e8', edge: '#6f8fd6', center: '#ffd86b' },
+  { petal: '#8fd4e8', edge: '#56b4cf', center: '#ffd86b' },
+  { petal: '#fbe9ef', edge: '#f0c2d2', center: '#f7d36b' },
+  { petal: '#ef6f6f', edge: '#d84444', center: '#ffd86b' },
+  { petal: '#e96bb0', edge: '#cf3f90', center: '#ffe07a' },
+  { petal: '#ffc1a1', edge: '#f59a73', center: '#f4b73e' },
+  { petal: '#a6d99b', edge: '#6fb45f', center: '#ffd86b' },
+  { petal: '#f9b4d0', edge: '#ef84ad', center: '#fff0a0' }
+];
+var BLOOM_SAKURA = 'M0,2 C -9,-9 -13,-26 -6,-37 C -3.5,-40 -1.5,-34 0,-37 C 1.5,-34 3.5,-40 6,-37 C 13,-26 9,-9 0,2 Z';
+var BLOOM_VARIANTS = [
+  { petals: 5,  shape: 'sakura',  double: false },
+  { petals: 6,  shape: 'ellipse', double: false },
+  { petals: 8,  shape: 'ellipse', double: true  },
+  { petals: 5,  shape: 'ellipse', double: true  },
+  { petals: 6,  shape: 'sakura',  double: false },
+  { petals: 12, shape: 'ellipse', double: true  }
+];
+function bloomFlowerSVG(pal, v) {
+  var parts = [], i, ang;
+  function ring(scale, rotOffset, inner) {
+    var fill   = inner ? pal.edge : pal.petal;
+    var stroke = inner ? pal.petal : pal.edge;
+    for (i = 0; i < v.petals; i++) {
+      ang = (360 / v.petals) * i + rotOffset;
+      if (v.shape === 'sakura') {
+        parts.push('<path d="' + BLOOM_SAKURA + '" fill="' + fill + '" stroke="' + stroke
+          + '" stroke-width="1.2" transform="rotate(' + ang + ') scale(' + (1.15 * scale).toFixed(2) + ')"/>');
+      } else {
+        parts.push('<ellipse cx="0" cy="' + (-26 * scale).toFixed(1) + '" rx="' + (11 * scale).toFixed(1)
+          + '" ry="' + (23 * scale).toFixed(1) + '" fill="' + fill + '" stroke="' + stroke
+          + '" stroke-width="1.5" transform="rotate(' + ang + ')"/>');
+      }
+    }
+  }
+  ring(1, 0, false);
+  if (v.double) ring(0.62, (360 / v.petals) / 2, true);
+  parts.push('<circle r="12" fill="' + pal.center + '"/>');
+  parts.push('<circle r="6" fill="' + pal.edge + '" opacity="0.4"/>');
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100">' + parts.join('') + '</svg>';
+}
+var BLOOM_FLOWER_URIS = [];
+BLOOM_PALETTES.forEach(function (pal) {
+  BLOOM_VARIANTS.forEach(function (v) {
+    BLOOM_FLOWER_URIS.push('data:image/svg+xml,' + encodeURIComponent(bloomFlowerSVG(pal, v)));
+  });
+});
+function bloomRandomFlowerURI() { return BLOOM_FLOWER_URIS[Math.floor(Math.random() * BLOOM_FLOWER_URIS.length)]; }
+function bloomRand(a, b) { return a + Math.random() * (b - a); }
+
+var bloomOverlayEl = document.getElementById('bloomOverlay');
+var bloomTimers = [];
+function bloomClearTimers() { bloomTimers.forEach(clearTimeout); bloomTimers = []; }
+function bloomLater(fn, ms) { bloomTimers.push(setTimeout(fn, ms)); }
+
+function playAnniversaryBloom(onDone) {
+  if (!bloomOverlayEl) { if (onDone) onDone(); return; }
+  bloomClearTimers();
+  bloomOverlayEl.classList.remove('cleared');
+  bloomOverlayEl.classList.add('playing');
+  bloomOverlayEl.style.opacity = '1';
+  bloomOverlayEl.style.pointerEvents = 'auto';
+  bloomOverlayEl.innerHTML = '';
+
+  var vw = window.innerWidth, vh = window.innerHeight;
+
+  function spawnFlower(left, top, size, delayMax) {
+    var fl = document.createElement('div');
+    fl.className = 'a-flower';
+    fl.style.width = size + 'px'; fl.style.height = size + 'px';
+    fl.style.left = left + 'px'; fl.style.top = top + 'px';
+    fl.style.backgroundImage = 'url("' + bloomRandomFlowerURI() + '")';
+    fl.style.backgroundSize = 'contain';
+    fl.style.backgroundRepeat = 'no-repeat';
+    fl.style.backgroundPosition = 'center';
+    fl.style.setProperty('--rot', bloomRand(-35, 35) + 'deg');
+    fl.style.setProperty('--delay', bloomRand(0.05, delayMax) + 's');
+    fl.style.setProperty('--spin', (Math.random() < 0.5 ? -1 : 1) * bloomRand(120, 360) + 'deg');
+    fl.style.zIndex = Math.floor(size);
+    bloomOverlayEl.appendChild(fl);
+    requestAnimationFrame(function () { fl.classList.add('bloom'); });
+  }
+
+  var cell = vw < 600 ? 84 : 100;
+  var cols = Math.ceil(vw / cell) + 2;
+  var rows = Math.ceil(vh / cell) + 2;
+
+  var bigN = Math.round(cols * rows * 0.22);
+  for (var b = 0; b < bigN; b++) {
+    spawnFlower(bloomRand(-cell, vw), bloomRand(-cell, vh), bloomRand(cell * 1.7, cell * 2.6), 1.0);
+  }
+  for (var r = 0; r < rows; r++) {
+    for (var c = 0; c < cols; c++) {
+      var x = -cell + c * cell + bloomRand(-cell * 0.4, cell * 0.4);
+      var y = -cell + r * cell + bloomRand(-cell * 0.4, cell * 0.4);
+      spawnFlower(x, y, bloomRand(cell * 1.0, cell * 1.5), 1.2);
+    }
+  }
+  var smallN = Math.round(cols * rows * 1.1);
+  for (var s = 0; s < smallN; s++) {
+    spawnFlower(bloomRand(-cell, vw), bloomRand(-cell, vh), bloomRand(cell * 0.34, cell * 0.66), 1.5);
+  }
+
+  bloomLater(function () { startBloomVanish(onDone); }, 3600);
+}
+
+function startBloomVanish(onDone) {
+  var flowers = bloomOverlayEl.querySelectorAll('.a-flower');
+  flowers.forEach(function (fl) {
+    fl.style.setProperty('--vdelay', bloomRand(0, 0.7) + 's');
+    fl.classList.add('vanish');
+  });
+  /* a few loose drifting petals for ambiance during the fall-away */
+  for (var i = 0; i < 26; i++) {
+    var pal = BLOOM_PALETTES[Math.floor(Math.random() * BLOOM_PALETTES.length)];
+    var p = document.createElement('div');
+    p.className = 'a-petal';
+    var sz = bloomRand(14, 26);
+    p.style.width = sz + 'px'; p.style.height = sz + 'px';
+    p.style.left = bloomRand(0, window.innerWidth) + 'px';
+    p.style.background = pal.petal;
+    p.style.setProperty('--pdur', bloomRand(2.5, 4.5) + 's');
+    p.style.setProperty('--pdelay', bloomRand(0, 1.0) + 's');
+    p.style.setProperty('--drift', bloomRand(-60, 60) + 'px');
+    bloomOverlayEl.appendChild(p);
+  }
+  bloomLater(function () {
+    bloomOverlayEl.classList.add('cleared');
+    bloomOverlayEl.classList.remove('playing');
+    if (onDone) onDone();
+  }, 1400);
+  /* safety net: never trap her behind the overlay */
+  bloomLater(function () {
+    bloomOverlayEl.classList.add('cleared');
+    bloomOverlayEl.classList.remove('playing');
+  }, 9000);
+}
+
+/* ---------- archiving the letter, once she's opened it ---------- */
+var ANNIV_UNLOCK_KEY = 'anniversary-letter-unlocked';
+function buildAnniversaryArchiveEntry() {
+  return {
+    id: 'anniversary-2026',
+    title: "Our First Anniversary",
+    date: "June 19, 2026",
+    icon: "🤍",
+    tagLabel: "One Year",
+    tagColor: "#d4475c",
+    tagBg: "rgba(212,71,92,0.08)",
+    letterDate: "June 19, 2026 — One Year Together",
+    letterHeading: "One Year, My June",
+    letterSub: "The letter from your first anniversary morning",
+    body: LOVE_LETTER_TEXT,
+    sign: LOVE_LETTER_SIGN,
+    qualities: [],
+    qualityColor: "#d4475c",
+    qualityBg: "rgba(212,71,92,0.07)",
+    qualityBorder: "rgba(212,71,92,0.18)"
+  };
+}
+function maybeAddAnniversaryToArchive() {
+  var unlocked = false;
+  try { unlocked = localStorage.getItem(ANNIV_UNLOCK_KEY) === '1'; } catch (e) {}
+  if (!unlocked) return;
+  var already = archiveEvents.some(function (ev) { return ev.id === 'anniversary-2026'; });
+  if (!already) archiveEvents.unshift(buildAnniversaryArchiveEntry());
+  // re-render in case the archive tab is already on screen / was already drawn
+  if (document.getElementById('archiveList')) renderArchive();
+}
+
+/* ---------- love letter card ---------- */
+function showLoveLetter() {
+  var ov = document.getElementById('loveLetterOverlay');
+  var body = document.getElementById('loveLetterBody');
+  var sign = document.getElementById('loveLetterSign');
+  if (!ov) return;
+  if (body) body.innerText = LOVE_LETTER_TEXT;
+  if (sign) sign.innerText = LOVE_LETTER_SIGN;
+  ov.style.display = 'flex';
+  requestAnimationFrame(function () { ov.classList.add('visible'); });
+}
+function closeLoveLetter() {
+  var ov = document.getElementById('loveLetterOverlay');
+  if (!ov) return;
+  ov.classList.remove('visible');
+  setTimeout(function () { ov.style.display = 'none'; }, 900);
+  activateAnniversaryTheme();
+  try { localStorage.setItem('bloom-seen-' + sbDateStr(new Date()), '1'); } catch (e) {}
+
+  // move the letter into the permanent Memory Archive
+  try { localStorage.setItem(ANNIV_UNLOCK_KEY, '1'); } catch (e) {}
+  maybeAddAnniversaryToArchive();
+  bloomLater(function () {
+    showGooseToast('💌', 'Saved to your Memory Archive', 'You can read it again anytime under 📚 Archive.', 6000);
+  }, 600);
+}
+
+/* ---------- persistent vibrant theme + ambient garden (all day on the 19th) ---------- */
+var ambientGardenStarted = false;
+function activateAnniversaryTheme() {
+  document.body.classList.add('anniversary-active');
+  startAmbientGarden();
+}
+function startAmbientGarden() {
+  if (ambientGardenStarted) return;
+  ambientGardenStarted = true;
+  var host = document.getElementById('ambientPetals');
+  if (!host) return;
+
+  function spawnAmbientBloom() {
+    var el = document.createElement('div');
+    el.className = 'amb-bloom';
+    var sz = bloomRand(32, 62);
+    el.style.width = sz + 'px'; el.style.height = sz + 'px';
+    el.style.left = bloomRand(2, 92) + 'vw';
+    el.style.top  = bloomRand(8, 90) + 'vh';
+    el.style.backgroundImage = 'url("' + bloomRandomFlowerURI() + '")';
+    el.style.setProperty('--brot', bloomRand(-25, 25) + 'deg');
+    var dur = bloomRand(5.5, 8);
+    el.style.setProperty('--bdur', dur + 's');
+    host.appendChild(el);
+    setTimeout(function () { el.remove(); }, dur * 1000 + 150);
+  }
+
+  function spawnAmbientSparkle() {
+    var el = document.createElement('div');
+    el.className = 'amb-sparkle';
+    el.textContent = ['✨', '🤍', '💛', '🌸'][Math.floor(Math.random() * 4)];
+    el.style.left = bloomRand(4, 92) + 'vw';
+    el.style.top  = bloomRand(8, 88) + 'vh';
+    el.style.setProperty('--ssize', bloomRand(14, 22) + 'px');
+    var dur = bloomRand(2.6, 3.8);
+    el.style.setProperty('--sdur', dur + 's');
+    host.appendChild(el);
+    setTimeout(function () { el.remove(); }, dur * 1000 + 150);
+  }
+
+  function spawnAmbientPetal() {
+    var pal = BLOOM_PALETTES[Math.floor(Math.random() * BLOOM_PALETTES.length)];
+    var p = document.createElement('div');
+    p.className = 'amb-petal';
+    var sz = bloomRand(10, 20);
+    p.style.width = sz + 'px'; p.style.height = sz + 'px';
+    p.style.left = bloomRand(0, window.innerWidth) + 'px';
+    p.style.background = pal.petal;
+    p.style.setProperty('--adrift', bloomRand(-50, 50) + 'px');
+    p.style.animationDuration = bloomRand(8, 14) + 's';
+    host.appendChild(p);
+    setTimeout(function () { p.remove(); }, 15000);
+  }
+
+  // gentle initial population so the garden feels alive immediately
+  for (var i = 0; i < 6; i++) bloomLater(spawnAmbientBloom, i * 450);
+  for (var j = 0; j < 2; j++) bloomLater(spawnAmbientPetal, j * 900);
+
+  // and keep it going, continuously, for as long as she's on the site that day
+  setInterval(spawnAmbientBloom, 1500);
+  setInterval(spawnAmbientSparkle, 2000);
+  setInterval(spawnAmbientPetal, 2600);
+}
+
+/* ---------- the actual gate, run on load ---------- */
+function initAnniversaryExperience() {
+  if (!isAnniversaryDate()) return; // any other day: untouched site
+  var todayKey = 'bloom-seen-' + sbDateStr(new Date());
+  var alreadySeen = false;
+  try { alreadySeen = localStorage.getItem(todayKey) === '1'; } catch (e) {}
+
+  if (alreadySeen) {
+    activateAnniversaryTheme();
+  } else {
+    playAnniversaryBloom(function () { showLoveLetter(); });
+  }
+}
+
 window.addEventListener('DOMContentLoaded', function() {
-  updateCalculations();
-  setInterval(updateCalculations, 1000*60*60);
+  tickLiveStats();
+  setInterval(tickLiveStats, 1000);
+  maybeAddAnniversaryToArchive();
   renderArchive();
   checkComfortWindow();
+  initAnniversaryExperience();
   // streak is recalculated each time the wellness tab opens
   // Delay notification slightly so the page settles first
   setTimeout(checkWellnessNotification, 1800);
@@ -1595,6 +2102,56 @@ function updateCalculations(){
   if(now.getDate()===19){aBox.innerText='Happy '+mo+' Months, My Love! ❤️';nBox.innerText="It's Today!";}
   else{var next=new Date(now.getFullYear(),now.getMonth(),19);if(now.getDate()>19)next.setMonth(next.getMonth()+1);aBox.innerText='Celebrating '+mo+' wonderful months...';nBox.innerText=Math.ceil((next-now)/(1000*60*60*24))+" days to go";}
   document.getElementById('promDays').innerText=Math.ceil((promDate-now)/(1000*60*60*24));
+}
+
+/* ---------- the love-story cards, made to feel alive ---------- */
+function tickLiveStats() {
+  updateCalculations();
+
+  var now = new Date();
+  var pad2 = function (n) { return String(n).padStart(2, '0'); };
+
+  // live ticking sub-counter under the big day count
+  var diffMs = now - startDate;
+  var diffDaysFull = Math.floor(diffMs / 86400000);
+  var rem = diffMs - diffDaysFull * 86400000;
+  var hh = Math.floor(rem / 3600000);
+  var mm = Math.floor((rem % 3600000) / 60000);
+  var ss = Math.floor((rem % 60000) / 1000);
+  var liveEl = document.getElementById('liveSecondsCounter');
+  if (liveEl) {
+    liveEl.innerText = diffDaysFull.toLocaleString() + ' days, ' + pad2(hh) + ':' + pad2(mm) + ':' + pad2(ss) + ' and counting…';
+  }
+
+  // milestone progress bar: where we are between the last 19th and the next one
+  var lastMilestone = new Date(now.getFullYear(), now.getMonth(), 19);
+  if (now.getDate() < 19) lastMilestone.setMonth(lastMilestone.getMonth() - 1);
+  var nextMilestone = new Date(lastMilestone);
+  nextMilestone.setMonth(nextMilestone.getMonth() + 1);
+  var cyclePct = Math.min(100, Math.max(0, ((now - lastMilestone) / (nextMilestone - lastMilestone)) * 100));
+  var msRemaining = nextMilestone - now;
+  var hoursRemaining = msRemaining / 3600000;
+
+  var fillEl = document.getElementById('milestoneProgressFill');
+  if (fillEl) {
+    fillEl.style.width = cyclePct + '%';
+    fillEl.classList.toggle('almost', hoursRemaining <= 24 && hoursRemaining > 0 && now.getDate() !== 19);
+  }
+
+  // in the final 24 hours before a milestone, turn "X days to go" into a live countdown clock
+  var labelEl = document.getElementById('nextAnniversaryLabel');
+  var nBox2 = document.getElementById('nextAnniversary');
+  if (labelEl && nBox2) {
+    if (now.getDate() !== 19 && hoursRemaining <= 24 && hoursRemaining > 0) {
+      labelEl.classList.add('countdown-live');
+      var rh = Math.floor(hoursRemaining);
+      var rm = Math.floor((msRemaining % 3600000) / 60000);
+      var rs = Math.floor((msRemaining % 60000) / 1000);
+      nBox2.innerText = pad2(rh) + ':' + pad2(rm) + ':' + pad2(rs) + ' left';
+    } else {
+      labelEl.classList.remove('countdown-live');
+    }
+  }
 }
 
 var wrappedIdx=0, wrappedTimer, slideDuration=5000;
